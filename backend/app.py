@@ -7,6 +7,7 @@ from resume_matcher import compare_skills
 import os
 
 app = Flask(__name__)
+app.config["MAX_CONTENT_LENGTH"]=5*1024*1024
 
 
 @app.route("/")
@@ -67,44 +68,73 @@ def analyze_resume():
 @app.route("/analyze-pdf", methods=["POST"])
 def analyze_pdf():
 
+    # Check whether a resume was uploaded
     if "resume" not in request.files:
         return {"error": "Please upload a resume PDF"}, 400
 
     file = request.files["resume"]
 
+    # Check whether a file was selected
     if file.filename == "":
         return {"error": "No file selected"}, 400
 
+    # Check the file extension
     if not file.filename.lower().endswith(".pdf"):
         return {"error": "Please upload a PDF file"}, 400
 
+    # Check the job description
     job_description = request.form.get("job_description", "")
 
     if not job_description.strip():
         return {"error": "Please provide a job description"}, 400
 
-    upload_folder = Path(__file__).resolve().parent.parent / "uploads"
-    upload_folder.mkdir(parents=True, exist_ok=True)
+    try:
+        # Create the uploads directory if it doesn't exist
+        upload_folder = Path(__file__).resolve().parent.parent / "uploads"
+        upload_folder.mkdir(parents=True, exist_ok=True)
 
-    filename = secure_filename(file.filename)
-    file_path = upload_folder / filename
+        # Generate a safe, unique filename
+        filename = secure_filename(file.filename)
 
-    file.save(file_path)
+        if not filename:
+            return {"error": "Invalid filename"}, 400
 
-    resume_text = extract_text_from_pdf(str(file_path))
+        file_path = upload_folder / filename
 
-    resume_skills = extract_skills(resume_text)
-    job_skills = extract_skills(job_description)
+        # Save the uploaded PDF
+        file.save(file_path)
 
-    result = compare_skills(resume_skills, job_skills)
+        # Extract text from the PDF
+        resume_text = extract_text_from_pdf(str(file_path))
 
-    return {
-        "resume_skills": resume_skills,
-        "job_skills": job_skills,
-        "matched_skills": result["matched_skills"],
-        "missing_skills": result["missing_skills"],
-        "match_score": result["match_score"]
-    }
+        # Check whether the PDF contains readable text
+        if not resume_text.strip():
+            return {
+                "error": "No readable text found in the PDF. It may be scanned."
+            }, 400
+
+        # Extract skills from the resume and job description
+        resume_skills = extract_skills(resume_text)
+        job_skills = extract_skills(job_description)
+
+        # Compare the skills
+        result = compare_skills(resume_skills, job_skills)
+
+        # Return the analysis report
+        return {
+            "resume_skills": resume_skills,
+            "job_skills": job_skills,
+            "matched_skills": result["matched_skills"],
+            "missing_skills": result["missing_skills"],
+            "match_score": result["match_score"]
+        }
+
+    except Exception:
+        app.logger.exception("Resume analysis failed")
+
+        return {
+            "error": "Unable to analyze this PDF. Please check the file and try again."
+        }, 400
 
 
 
