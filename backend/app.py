@@ -1,4 +1,10 @@
-from flask import Flask
+from flask import Flask, request
+from werkzeug.utils import secure_filename
+from pathlib import Path
+from resume_parser import extract_text_from_pdf
+from skill_extracter import extract_skills
+from resume_matcher import compare_skills
+import os
 
 app = Flask(__name__)
 
@@ -6,6 +12,100 @@ app = Flask(__name__)
 @app.route("/")
 def home():
     return "Leon's AI Resume Analyzer is running!"
+
+
+@app.route("/upload", methods=["POST"])
+def upload_resume():
+
+    file = request.files["resume"]
+
+    upload_folder = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)),
+        "uploads"
+    )
+
+    file_path = os.path.join(upload_folder, file.filename)
+
+    file.save(file_path)
+
+    text = extract_text_from_pdf(file_path)
+
+    return text
+
+@app.route("/job-description", methods=["POST"])
+def job_description():
+
+    data = request.get_json()
+
+    job_description = data["job_description"]
+
+    return job_description
+
+@app.route("/extract-skills", methods=["POST"])
+def extract_resume_skills():
+    data = request.get_json()
+
+    text = data["text"]
+
+    skills = extract_skills(text)
+
+    return {"skills": skills}
+
+@app.route("/analyze", methods=["POST"])
+def analyze_resume():
+    data = request.get_json()
+
+    resume_text = data["resume_text"]
+    job_description = data["job_description"]
+
+    resume_skills = extract_skills(resume_text)
+    job_skills = extract_skills(job_description)
+
+    result = compare_skills(resume_skills, job_skills)
+
+    return result
+@app.route("/analyze-pdf", methods=["POST"])
+def analyze_pdf():
+
+    if "resume" not in request.files:
+        return {"error": "Please upload a resume PDF"}, 400
+
+    file = request.files["resume"]
+
+    if file.filename == "":
+        return {"error": "No file selected"}, 400
+
+    if not file.filename.lower().endswith(".pdf"):
+        return {"error": "Please upload a PDF file"}, 400
+
+    job_description = request.form.get("job_description", "")
+
+    if not job_description.strip():
+        return {"error": "Please provide a job description"}, 400
+
+    upload_folder = Path(__file__).resolve().parent.parent / "uploads"
+    upload_folder.mkdir(parents=True, exist_ok=True)
+
+    filename = secure_filename(file.filename)
+    file_path = upload_folder / filename
+
+    file.save(file_path)
+
+    resume_text = extract_text_from_pdf(str(file_path))
+
+    resume_skills = extract_skills(resume_text)
+    job_skills = extract_skills(job_description)
+
+    result = compare_skills(resume_skills, job_skills)
+
+    return {
+        "resume_skills": resume_skills,
+        "job_skills": job_skills,
+        "matched_skills": result["matched_skills"],
+        "missing_skills": result["missing_skills"],
+        "match_score": result["match_score"]
+    }
+
 
 
 if __name__ == "__main__":
