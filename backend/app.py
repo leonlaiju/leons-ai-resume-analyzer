@@ -1,4 +1,5 @@
 from flask import Flask, request
+from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from pathlib import Path
 from resume_parser import extract_text_from_pdf
@@ -7,7 +8,14 @@ from resume_matcher import compare_skills
 import os
 
 app = Flask(__name__)
-app.config["MAX_CONTENT_LENGTH"]=5*1024*1024
+
+CORS(app, resources={
+    r"/*": {
+        "origins": ["http://127.0.0.1:5500", "http://localhost:5500"]
+    }
+})
+
+app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
 
 
 @app.route("/")

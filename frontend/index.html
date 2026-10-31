@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Resume Analyzer</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>AI Resume Analyzer</h1>
+        <p>Analyze your resume against your dream job.</p>
+    </header>
+
+    <main>
+
+        <section class="analyzer-card">
+
+            <h2>Analyze Your Resume</h2>
+
+            <form id="resumeForm">
+
+                <label for="resume">
+                    Upload Your Resume (PDF)
+                </label>
+
+                <input
+                    type="file"
+                    id="resume"
+                    name="resume"
+                    accept=".pdf,application/pdf"
+                    required
+                >
+
+                <label for="jobDescription">
+                    Paste the Job Description
+                </label>
+
+                <textarea
+                    id="jobDescription"
+                    name="job_description"
+                    placeholder="Paste the job description here..."
+                    required
+                ></textarea>
+
+                <button type="submit" id="analyzeButton">
+                    Analyze Resume
+                </button>
+
+            </form>
+
+            <p id="statusMessage" role="status" aria-live="polite"></p>
+
+        </section>
+
+        <section id="results" class="results-card" hidden>
+
+            <h2>Analysis Results</h2>
+
+            <div class="score-container">
+                <p>Resume Match Score</p>
+                <h3 id="matchScore">0%</h3>
+            </div>
+
+            <div class="skills-container">
+
+                <div>
+                    <h3>Matched Skills</h3>
+                    <ul id="matchedSkills"></ul>
+                </div>
+
+                <div>
+                    <h3>Missing Skills</h3>
+                    <ul id="missingSkills"></ul>
+                </div>
+
+            </div>
+
+            <p class="note">
+                The match score measures recognized skill overlap.
+                It is not a prediction of hiring success.
+            </p>
+
+        </section>
+
+    </main>
+
+    <footer>
+        <p>Built with Python, Flask, HTML, CSS and JavaScript.</p>
+    </footer>
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>
