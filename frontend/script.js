@@ -17,9 +17,9 @@ const resultsSection = document.getElementById("results");
 const matchScore = document.getElementById("matchScore");
 const matchedSkills = document.getElementById("matchedSkills");
 const missingSkills = document.getElementById("missingSkills");
+const recommendedSkills = document.getElementById("recommendedSkills");
 
-
-// Check that all required elements exist
+// Check that all required HTML elements exist
 
 if (
     !resumeForm ||
@@ -30,13 +30,14 @@ if (
     !resultsSection ||
     !matchScore ||
     !matchedSkills ||
-    !missingSkills
+    !missingSkills ||
+    !recommendedSkills
 ) {
     console.error("HTML elements are missing. Check index.html IDs.");
 
 } else {
 
-    // Handle the form submission
+    // Handle form submission
 
     resumeForm.addEventListener("submit", async function (event) {
 
@@ -91,7 +92,7 @@ if (
 
         try {
 
-            // Send the request to Flask
+            // Send request to Flask
 
             console.log("Sending request to Flask...");
 
@@ -109,7 +110,7 @@ if (
 
             console.log("Server response:", result);
 
-            // Handle errors
+            // Handle server errors
 
             if (!response.ok) {
                 throw new Error(
@@ -124,30 +125,43 @@ if (
                 !Array.isArray(result.matched_skills) ||
                 !Array.isArray(result.missing_skills)
             ) {
-                throw new Error("The server returned invalid analysis data.");
+                throw new Error(
+                    "The server returned invalid analysis data."
+                );
             }
 
-            // Display the score
+            // Display match score
 
             matchScore.textContent = result.match_score + "%";
 
-            // Display skills
+            // Display matched and missing skills
 
             displaySkills(matchedSkills, result.matched_skills);
             displaySkills(missingSkills, result.missing_skills);
+
+            // Display recommendations
+
+            const recommendations = Array.isArray(result.recommendations)
+                ? result.recommendations
+                : result.missing_skills;
+
+            displayRecommendations(
+                recommendedSkills,
+                recommendations
+            );
 
             // Show results
 
             resultsSection.hidden = false;
 
             statusMessage.style.color = "green";
+            statusMessage.style.fontWeight = "normal";
             statusMessage.textContent =
                 "Resume analysis completed successfully!";
 
             console.log("Analysis completed successfully!");
-            console.log("Results section visible:", !resultsSection.hidden);
 
-            // Scroll to the results
+            // Scroll to results
 
             resultsSection.scrollIntoView({
                 behavior: "smooth",
@@ -157,7 +171,10 @@ if (
         } catch (error) {
 
             console.error("Analysis error:", error);
-            showError(error.message);
+
+            showError(
+                error.message || "Something went wrong during analysis."
+            );
 
         } finally {
 
@@ -184,7 +201,7 @@ function showError(message) {
 }
 
 
-// Display skills
+// Display matched and missing skills
 
 function displaySkills(listElement, skills) {
 
@@ -194,6 +211,34 @@ function displaySkills(listElement, skills) {
 
         const li = document.createElement("li");
         li.textContent = "No skills found.";
+
+        listElement.appendChild(li);
+
+        return;
+    }
+
+    skills.forEach(function (skill) {
+
+        const li = document.createElement("li");
+        li.textContent = skill;
+
+        listElement.appendChild(li);
+
+    });
+
+}
+
+
+// Display recommended skills
+
+function displayRecommendations(listElement, skills) {
+
+    listElement.replaceChildren();
+
+    if (skills.length === 0) {
+
+        const li = document.createElement("li");
+        li.textContent = "Great! No missing skills were identified.";
 
         listElement.appendChild(li);
 
