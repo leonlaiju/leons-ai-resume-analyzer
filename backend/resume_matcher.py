@@ -79,24 +79,32 @@ def generate_recommendations(missing_skills):
     return recommendations
 def calculate_text_similarity(resume_text, job_description):
 
+    if not isinstance(resume_text, str) or not isinstance(job_description, str):
+        return 0.0
+    if not resume_text.strip() or not job_description.strip():
+        return 0.0
     # Convert text into numerical vectors
     vectorizer = TfidfVectorizer()
 
-    tfidf_matrix = vectorizer.fit_transform([
-        resume_text,
-        job_description
-    ])
+    try:
+        tfidf_matrix = vectorizer.fit_transform([
+            resume_text,
+            job_description
+        ])
 
-    # Calculate cosine similarity
-    similarity = cosine_similarity(
-        tfidf_matrix[0:1],
-        tfidf_matrix[1:2]
-    )
+        # Calculate cosine similarity
+        similarity = cosine_similarity(
+            tfidf_matrix[0:1],
+            tfidf_matrix[1:2]
+        )
 
-    # Convert score into percentage
-    similarity_score = similarity[0][0] * 100
+        # Convert score into percentage
+        similarity_score = similarity[0][0] * 100
 
-    return round(similarity_score, 2)
+        return round(similarity_score, 2)
+
+    except ValueError:
+        return 0.0
 def compare_skills(resume_skills, job_skills):
 
     # Handle empty or invalid inputs

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -19,6 +20,7 @@
 
     <main>
 
+        <!-- Resume Analyzer Form -->
         <section class="analyzer-card">
 
             <h2>Analyze Your Resume</h2>
@@ -58,15 +60,29 @@
 
         </section>
 
+
+        <!-- Analysis Results -->
         <section id="results" class="results-card" hidden>
 
             <h2>Analysis Results</h2>
 
+            <!-- Match Scores -->
             <div class="score-container">
-                <p>Resume Match Score</p>
-                <h3 id="matchScore">0%</h3>
+
+                <div>
+                    <p>Resume Match Score</p>
+                    <h3 id="matchScore">0%</h3>
+                </div>
+
+                <div>
+                    <p>Text Similarity Score</p>
+                    <h3 id="textSimilarityScore">0%</h3>
+                </div>
+
             </div>
 
+
+            <!-- Matched and Missing Skills -->
             <div class="skills-container">
 
                 <div>
@@ -81,25 +97,52 @@
 
             </div>
 
+
+            <!-- Recommended Skills -->
             <div class="recommendations-container">
+
                 <h3>Recommended Skills to Learn</h3>
-                <p>Consider developing these skills to better match the job requirements.</p>
+
+                <p>
+                    Consider developing these skills to better match
+                    the job requirements.
+                </p>
+
                 <ul id="recommendedSkills"></ul>
+
             </div>
 
+
+            <!-- Categorized Recommendations -->
+            <div class="recommendations-container">
+
+                <h3>Recommendations by Category</h3>
+
+                <div id="categorizedRecommendations"></div>
+
+            </div>
+
+
+            <!-- Information Note -->
             <p class="note">
-                The match score measures recognized skill overlap.
-                It is not a prediction of hiring success.
+                The Resume Match Score measures recognized skill overlap.
+                The Text Similarity Score measures textual similarity
+                between the resume and job description.
+                Neither score predicts hiring success.
             </p>
 
         </section>
 
     </main>
 
+
+    <!-- Footer -->
     <footer>
         <p>Built with Python, Flask, HTML, CSS and JavaScript.</p>
     </footer>
 
+
+    <!-- JavaScript -->
     <script src="script.js"></script>
 
 </body>

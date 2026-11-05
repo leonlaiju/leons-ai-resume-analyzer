@@ -4,7 +4,7 @@ from werkzeug.utils import secure_filename
 from pathlib import Path
 from resume_parser import extract_text_from_pdf
 from skill_extracter import extract_skills
-from resume_matcher import compare_skills
+from resume_matcher import compare_skills, calculate_text_similarity
 import os
 
 app = Flask(__name__)
@@ -71,6 +71,7 @@ def analyze_resume():
     job_skills = extract_skills(job_description)
 
     result = compare_skills(resume_skills, job_skills)
+    
 
     return result
 @app.route("/analyze-pdf", methods=["POST"])
@@ -127,15 +128,25 @@ def analyze_pdf():
 
         # Compare the skills
         result = compare_skills(resume_skills, job_skills)
+        # Calculate text similarity
+        similarity_score = calculate_text_similarity(resume_text,job_description)
 
         # Return the analysis report
         return {
+
             "resume_skills": resume_skills,
             "job_skills": job_skills,
+
             "matched_skills": result["matched_skills"],
             "missing_skills": result["missing_skills"],
-            "match_score": result["match_score"]
-        }
+
+            "match_score": result["match_score"],
+
+            "text_similarity_score": similarity_score,
+
+            "recommendations": result["recommendations"],
+            "recommendation_categories": result["recommendation_categories"]
+}
 
     except Exception:
         app.logger.exception("Resume analysis failed")
